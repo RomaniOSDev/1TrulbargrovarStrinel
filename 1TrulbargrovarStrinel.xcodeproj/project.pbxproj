@@ -3,33 +3,61 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 60;
 	objects = {
+
+/* Begin PBXBuildFile section */
+		748173EF2F573648008BA5CC /* AchievementsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173D62F573648008BA5CC /* AchievementsTabView.swift */; };
+		748173F02F573648008BA5CC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173D72F573648008BA5CC /* AppDelegate.swift */; };
+		748173F12F573648008BA5CC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173D92F573648008BA5CC /* ContentView.swift */; };
+		748173F22F573648008BA5CC /* GameBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173DA2F573648008BA5CC /* GameBackgroundView.swift */; };
+		748173F32F573648008BA5CC /* GameSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173DB2F573648008BA5CC /* GameSelectionView.swift */; };
+		748173F42F573648008BA5CC /* GameStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173DC2F573648008BA5CC /* GameStorage.swift */; };
+		748173F52F573648008BA5CC /* LevelResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E02F573648008BA5CC /* LevelResultView.swift */; };
+		748173F62F573648008BA5CC /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E32F573648008BA5CC /* MainTabView.swift */; };
+		748173F72F573648008BA5CC /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E42F573648008BA5CC /* OnboardingView.swift */; };
+		748173F82F573648008BA5CC /* PathTracerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E52F573648008BA5CC /* PathTracerViewModel.swift */; };
+		748173F92F573648008BA5CC /* PlayTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E62F573648008BA5CC /* PlayTabView.swift */; };
+		748173FA2F573648008BA5CC /* PrecisionDropViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E72F573648008BA5CC /* PrecisionDropViewModel.swift */; };
+		748173FB2F573648008BA5CC /* RootGameContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E82F573648008BA5CC /* RootGameContainerView.swift */; };
+		748173FC2F573648008BA5CC /* ScaledButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173E92F573648008BA5CC /* ScaledButtonStyle.swift */; };
+		748173FD2F573648008BA5CC /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173EA2F573648008BA5CC /* SceneDelegate.swift */; };
+		748173FE2F573648008BA5CC /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173EB2F573648008BA5CC /* SettingsTabView.swift */; };
+		748173FF2F573648008BA5CC /* StackRushViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173EC2F573648008BA5CC /* StackRushViewModel.swift */; };
+		748174002F573648008BA5CC /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748173ED2F573648008BA5CC /* ViewController.swift */; };
+		748174012F573648008BA5CC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 748173D82F573648008BA5CC /* Assets.xcassets */; };
+		748174032F573648008BA5CC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 748173DF2F573648008BA5CC /* LaunchScreen.storyboard */; };
+		748174042F573648008BA5CC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 748173E22F573648008BA5CC /* Main.storyboard */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		7481734D2F56D729008BA5CC /* 1TrulbargrovarStrinel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 1TrulbargrovarStrinel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		748173D62F573648008BA5CC /* AchievementsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsTabView.swift; sourceTree = "<group>"; };
+		748173D72F573648008BA5CC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		748173D82F573648008BA5CC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		748173D92F573648008BA5CC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		748173DA2F573648008BA5CC /* GameBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameBackgroundView.swift; sourceTree = "<group>"; };
+		748173DB2F573648008BA5CC /* GameSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSelectionView.swift; sourceTree = "<group>"; };
+		748173DC2F573648008BA5CC /* GameStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStorage.swift; sourceTree = "<group>"; };
+		748173DD2F573648008BA5CC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		748173DE2F573648008BA5CC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		748173E02F573648008BA5CC /* LevelResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelResultView.swift; sourceTree = "<group>"; };
+		748173E12F573648008BA5CC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		748173E32F573648008BA5CC /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		748173E42F573648008BA5CC /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		748173E52F573648008BA5CC /* PathTracerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathTracerViewModel.swift; sourceTree = "<group>"; };
+		748173E62F573648008BA5CC /* PlayTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayTabView.swift; sourceTree = "<group>"; };
+		748173E72F573648008BA5CC /* PrecisionDropViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecisionDropViewModel.swift; sourceTree = "<group>"; };
+		748173E82F573648008BA5CC /* RootGameContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootGameContainerView.swift; sourceTree = "<group>"; };
+		748173E92F573648008BA5CC /* ScaledButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaledButtonStyle.swift; sourceTree = "<group>"; };
+		748173EA2F573648008BA5CC /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		748173EB2F573648008BA5CC /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		748173EC2F573648008BA5CC /* StackRushViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackRushViewModel.swift; sourceTree = "<group>"; };
+		748173ED2F573648008BA5CC /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		B93B32A2DB826C155AE1C60C /* Pods-1TrulbargrovarStrinel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-1TrulbargrovarStrinel.release.xcconfig"; path = "Target Support Files/Pods-1TrulbargrovarStrinel/Pods-1TrulbargrovarStrinel.release.xcconfig"; sourceTree = "<group>"; };
+		BFB2C21857C5A9C0F1005658 /* Pods_1TrulbargrovarStrinel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_1TrulbargrovarStrinel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2FB0DEFC38C643C1EB3B613 /* Pods-1TrulbargrovarStrinel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-1TrulbargrovarStrinel.debug.xcconfig"; path = "Target Support Files/Pods-1TrulbargrovarStrinel/Pods-1TrulbargrovarStrinel.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7481735F2F56D72A008BA5CC /* Exceptions for "1TrulbargrovarStrinel" folder in "1TrulbargrovarStrinel" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 7481734C2F56D729008BA5CC /* 1TrulbargrovarStrinel */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		7481734F2F56D729008BA5CC /* 1TrulbargrovarStrinel */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				7481735F2F56D72A008BA5CC /* Exceptions for "1TrulbargrovarStrinel" folder in "1TrulbargrovarStrinel" target */,
-			);
-			path = 1TrulbargrovarStrinel;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		7481734A2F56D729008BA5CC /* Frameworks */ = {
@@ -45,8 +73,10 @@
 		748173442F56D729008BA5CC = {
 			isa = PBXGroup;
 			children = (
-				7481734F2F56D729008BA5CC /* 1TrulbargrovarStrinel */,
+				748173EE2F573648008BA5CC /* 1TrulbargrovarStrinel */,
 				7481734E2F56D729008BA5CC /* Products */,
+				7B8A3300C9939CBE2B6144A4 /* Pods */,
+				8702844408014939F9D9D841 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,6 +88,52 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		748173EE2F573648008BA5CC /* 1TrulbargrovarStrinel */ = {
+			isa = PBXGroup;
+			children = (
+				748173D62F573648008BA5CC /* AchievementsTabView.swift */,
+				748173D72F573648008BA5CC /* AppDelegate.swift */,
+				748173D82F573648008BA5CC /* Assets.xcassets */,
+				748173D92F573648008BA5CC /* ContentView.swift */,
+				748173DA2F573648008BA5CC /* GameBackgroundView.swift */,
+				748173DB2F573648008BA5CC /* GameSelectionView.swift */,
+				748173DC2F573648008BA5CC /* GameStorage.swift */,
+				748173DD2F573648008BA5CC /* Info.plist */,
+				748173DF2F573648008BA5CC /* LaunchScreen.storyboard */,
+				748173E02F573648008BA5CC /* LevelResultView.swift */,
+				748173E22F573648008BA5CC /* Main.storyboard */,
+				748173E32F573648008BA5CC /* MainTabView.swift */,
+				748173E42F573648008BA5CC /* OnboardingView.swift */,
+				748173E52F573648008BA5CC /* PathTracerViewModel.swift */,
+				748173E62F573648008BA5CC /* PlayTabView.swift */,
+				748173E72F573648008BA5CC /* PrecisionDropViewModel.swift */,
+				748173E82F573648008BA5CC /* RootGameContainerView.swift */,
+				748173E92F573648008BA5CC /* ScaledButtonStyle.swift */,
+				748173EA2F573648008BA5CC /* SceneDelegate.swift */,
+				748173EB2F573648008BA5CC /* SettingsTabView.swift */,
+				748173EC2F573648008BA5CC /* StackRushViewModel.swift */,
+				748173ED2F573648008BA5CC /* ViewController.swift */,
+			);
+			path = 1TrulbargrovarStrinel;
+			sourceTree = "<group>";
+		};
+		7B8A3300C9939CBE2B6144A4 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E2FB0DEFC38C643C1EB3B613 /* Pods-1TrulbargrovarStrinel.debug.xcconfig */,
+				B93B32A2DB826C155AE1C60C /* Pods-1TrulbargrovarStrinel.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		8702844408014939F9D9D841 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BFB2C21857C5A9C0F1005658 /* Pods_1TrulbargrovarStrinel.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -65,6 +141,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 748173602F56D72A008BA5CC /* Build configuration list for PBXNativeTarget "1TrulbargrovarStrinel" */;
 			buildPhases = (
+				93EB889E0BE46C829467B072 /* [CP] Check Pods Manifest.lock */,
 				748173492F56D729008BA5CC /* Sources */,
 				7481734A2F56D729008BA5CC /* Frameworks */,
 				7481734B2F56D729008BA5CC /* Resources */,
@@ -73,12 +150,7 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				7481734F2F56D729008BA5CC /* 1TrulbargrovarStrinel */,
-			);
 			name = 1TrulbargrovarStrinel;
-			packageProductDependencies = (
-			);
 			productName = 1TrulbargrovarStrinel;
 			productReference = 7481734D2F56D729008BA5CC /* 1TrulbargrovarStrinel.app */;
 			productType = "com.apple.product-type.application";
@@ -99,6 +171,7 @@
 				};
 			};
 			buildConfigurationList = 748173482F56D729008BA5CC /* Build configuration list for PBXProject "1TrulbargrovarStrinel" */;
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -106,8 +179,6 @@
 				Base,
 			);
 			mainGroup = 748173442F56D729008BA5CC;
-			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = 7481734E2F56D729008BA5CC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -122,24 +193,90 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				748174012F573648008BA5CC /* Assets.xcassets in Resources */,
+				748174032F573648008BA5CC /* LaunchScreen.storyboard in Resources */,
+				748174042F573648008BA5CC /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		93EB889E0BE46C829467B072 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-1TrulbargrovarStrinel-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		748173492F56D729008BA5CC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				748173EF2F573648008BA5CC /* AchievementsTabView.swift in Sources */,
+				748173F02F573648008BA5CC /* AppDelegate.swift in Sources */,
+				748173F12F573648008BA5CC /* ContentView.swift in Sources */,
+				748173F22F573648008BA5CC /* GameBackgroundView.swift in Sources */,
+				748173F32F573648008BA5CC /* GameSelectionView.swift in Sources */,
+				748173F42F573648008BA5CC /* GameStorage.swift in Sources */,
+				748173F52F573648008BA5CC /* LevelResultView.swift in Sources */,
+				748173F62F573648008BA5CC /* MainTabView.swift in Sources */,
+				748173F72F573648008BA5CC /* OnboardingView.swift in Sources */,
+				748173F82F573648008BA5CC /* PathTracerViewModel.swift in Sources */,
+				748173F92F573648008BA5CC /* PlayTabView.swift in Sources */,
+				748173FA2F573648008BA5CC /* PrecisionDropViewModel.swift in Sources */,
+				748173FB2F573648008BA5CC /* RootGameContainerView.swift in Sources */,
+				748173FC2F573648008BA5CC /* ScaledButtonStyle.swift in Sources */,
+				748173FD2F573648008BA5CC /* SceneDelegate.swift in Sources */,
+				748173FE2F573648008BA5CC /* SettingsTabView.swift in Sources */,
+				748173FF2F573648008BA5CC /* StackRushViewModel.swift in Sources */,
+				748174002F573648008BA5CC /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		748173DF2F573648008BA5CC /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				748173DE2F573648008BA5CC /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		748173E22F573648008BA5CC /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				748173E12F573648008BA5CC /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		748173612F56D72A008BA5CC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E2FB0DEFC38C643C1EB3B613 /* Pods-1TrulbargrovarStrinel.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -147,30 +284,38 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 1TrulbargrovarStrinel/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Trulbargrovar Strinel";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mycompany.-TrulbargrovarStrinel";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hal.dfrh80sl93s;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		748173622F56D72A008BA5CC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B93B32A2DB826C155AE1C60C /* Pods-1TrulbargrovarStrinel.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -178,25 +323,32 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 1TrulbargrovarStrinel/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Trulbargrovar Strinel";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mycompany.-TrulbargrovarStrinel";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hal.dfrh80sl93s;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
