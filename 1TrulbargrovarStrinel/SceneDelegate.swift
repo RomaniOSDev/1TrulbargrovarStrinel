@@ -7,6 +7,7 @@
 
 import UIKit
 import SwiftUI
+import AppTrackingTransparency
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -14,9 +15,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        guard let windowScene = (scene as? UIWindowScene) else {return}
+        guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = UIHostingController(rootView: ContentView())
+        window?.rootViewController = LoadingManager.shared.makeRootViewController()
         window?.makeKeyAndVisible()
     }
 
@@ -28,8 +29,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        requestTrackingAuthorizationIfNeeded()
+    }
+
+    /// Запрос на отслеживание данных (ATT) для сбора IDFA, требуется для AppsFlyer.
+    /// Показывается один раз, когда статус ещё не определён (.notDetermined).
+    private func requestTrackingAuthorizationIfNeeded() {
+        guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            ATTrackingManager.requestTrackingAuthorization { _ in
+                // Результат учтён системой; AppsFlyer получит IDFA при разрешении.
+            }
+        }
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
