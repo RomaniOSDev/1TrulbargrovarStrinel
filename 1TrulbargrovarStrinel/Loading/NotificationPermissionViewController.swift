@@ -45,13 +45,32 @@ final class NotificationPermissionViewController: UIViewController {
     }
 
     private func handleAccept() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { [weak self] granted, _ in
-            DispatchQueue.main.async {
-                if granted {
-                    NotificationPermissionManager.shared.markShouldSendTokenOnce()
-                    UIApplication.shared.registerForRemoteNotifications()
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { [weak self] granted, _ in
+                    DispatchQueue.main.async {
+                        if granted {
+                            NotificationPermissionManager.shared.recordCustomAccept()
+                            NotificationPermissionManager.shared.markShouldSendTokenOnce()
+                            UIApplication.shared.registerForRemoteNotifications()
+                        }
+                        self?.showWebView()
+                    }
                 }
-                self?.showWebView()
+            case .authorized, .provisional, .ephemeral:
+                NotificationPermissionManager.shared.recordCustomAccept()
+                DispatchQueue.main.async { [weak self] in
+                    self?.showWebView()
+                }
+            case .denied:
+                DispatchQueue.main.async { [weak self] in
+                    self?.showWebView()
+                }
+            @unknown default:
+                DispatchQueue.main.async { [weak self] in
+                    self?.showWebView()
+                }
             }
         }
     }

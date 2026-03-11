@@ -11,6 +11,7 @@ import Foundation
 enum NotificationPermissionKeys {
     static let lastCustomDeclineDate = "NotificationPermissionLastCustomDeclineDate"
     static let shouldSendTokenOnce = "NotificationPermissionShouldSendTokenOnce"
+    static let acceptedOnce = "NotificationPermissionAcceptedOnce"
 }
 
 private let customDeclineCooldownDays: Int = 3
@@ -24,6 +25,11 @@ final class NotificationPermissionManager {
     /// Call when user taps "Decline" on the custom notification screen.
     func recordCustomDecline() {
         UserDefaults.standard.set(Date(), forKey: NotificationPermissionKeys.lastCustomDeclineDate)
+    }
+
+    /// Call when user taps "Enable" and grants notifications at least once.
+    func recordCustomAccept() {
+        UserDefaults.standard.set(true, forKey: NotificationPermissionKeys.acceptedOnce)
     }
 
     /// Mark that after the next FCM token reception we should send config once with push token.
@@ -41,8 +47,11 @@ final class NotificationPermissionManager {
     }
 
     /// Whether the custom notification screen should be shown before WebView.
-    /// Returns false for 3 days after a custom decline.
+    /// Returns false forever after first accept, and for 3 days after a custom decline.
     var shouldShowCustomNotificationScreen: Bool {
+        if UserDefaults.standard.bool(forKey: NotificationPermissionKeys.acceptedOnce) {
+            return false
+        }
         guard let date = UserDefaults.standard.object(forKey: NotificationPermissionKeys.lastCustomDeclineDate) as? Date else {
             return true
         }
