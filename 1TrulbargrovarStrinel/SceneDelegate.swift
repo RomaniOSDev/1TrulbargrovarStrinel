@@ -8,6 +8,7 @@
 import UIKit
 import SwiftUI
 import AppTrackingTransparency
+import AppsFlyerLib
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -19,6 +20,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         window?.rootViewController = LoadingManager.shared.makeRootViewController()
         window?.makeKeyAndVisible()
+        handleDeepLinkConnectionOptions(connectionOptions)
+    }
+
+    // Scene-based lifecycle: deep links are delivered here.
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
+        AppsFlyerLib.shared().handleOpen(url, options: nil)
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        AppsFlyerLib.shared().continue(userActivity, restorationHandler: nil)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -59,6 +71,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
 
+    private func handleDeepLinkConnectionOptions(_ options: UIScene.ConnectionOptions) {
+        if let urlContext = options.urlContexts.first {
+            AppsFlyerLib.shared().handleOpen(urlContext.url, options: nil)
+        }
+        if let activity = options.userActivities.first {
+            AppsFlyerLib.shared().continue(activity, restorationHandler: nil)
+        }
+    }
 
 }
 

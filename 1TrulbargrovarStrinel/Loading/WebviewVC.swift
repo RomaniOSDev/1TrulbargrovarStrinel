@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-final class WebviewVC: UIViewController, WKNavigationDelegate {
+final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIScrollViewDelegate {
 
     // MARK: - Properties
     private var webView: WKWebView!
@@ -37,8 +37,11 @@ final class WebviewVC: UIViewController, WKNavigationDelegate {
         webView = WKWebView(frame: .zero, configuration: config)
         webView.customUserAgent = UserAgentBuilder.build()
         webView.navigationDelegate = self
+        webView.uiDelegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.allowsBackForwardNavigationGestures = true // встроенный свайп
+        webView.scrollView.delegate = self
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
 
         view.addSubview(webView)
 
@@ -73,9 +76,29 @@ final class WebviewVC: UIViewController, WKNavigationDelegate {
     func webView(_ webView: WKWebView,
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if let url = navigationAction.request.url {
-            lastRedirectURL = url // сохраняем последнюю попытку перехода
+        guard let url = navigationAction.request.url else {
+            decisionHandler(.cancel)
+            return
         }
+        lastRedirectURL = url // сохраняем последнюю попытку перехода
+
+        // target="_blank" / window.open
+        if navigationAction.targetFrame == nil {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            decisionHandler(.cancel)
+            return
+        }
+
+        let scheme = (url.scheme ?? "").lowercased()
+        let isHttp = scheme == "http" || scheme == "https"
+
+        // Deep links and custom schemes should be opened by the system.
+        if !isHttp || url.host?.contains("app.appsflyer.com") == true {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            decisionHandler(.cancel)
+            return
+        }
+
         decisionHandler(.allow)
     }
 
@@ -90,6 +113,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate {
             print("✅ Успешно загружено: \(url.absoluteString)")
             lastRedirectURL = url // обновляем успешную ссылку
         }
+        disablePageZoom()
     }
 
     func webView(_ webView: WKWebView,
@@ -115,6 +139,37 @@ final class WebviewVC: UIViewController, WKNavigationDelegate {
         } else {
             print("❗️Ошибка загрузки: \(nsError.localizedDescription)")
         }
+    }
+
+    // MARK: - Zoom control
+    private func disablePageZoom() {
+        let script = """
+        (function() {
+            var meta = document.querySelector('meta[name=viewport]');
+            if (!meta) {
+                meta = document.createElement('meta');
+                meta.name = 'viewport';
+                document.head.appendChild(meta);
+            }
+            meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        })();
+        """
+        webView.evaluateJavaScript(script, completionHandler: nil)
+    }
+
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        nil
+    }
+
+    // MARK: - WKUIDelegate
+    func webView(_ webView: WKWebView,
+                 createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction,
+                 windowFeatures: WKWindowFeatures) -> WKWebView? {
+        if let url = navigationAction.request.url {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+        return nil
     }
 }
 

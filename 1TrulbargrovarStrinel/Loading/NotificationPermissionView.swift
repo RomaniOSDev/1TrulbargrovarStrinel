@@ -13,30 +13,37 @@ struct NotificationPermissionView: View {
     var onDecline: () -> Void
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [Color.appBackground, Color.appSurface],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        GeometryReader { geometry in
+            let isPortrait = geometry.size.height >= geometry.size.width
+            ZStack {
+                LinearGradient(
+                    colors: [Color.appBackground, Color.appSurface],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    Spacer(minLength: 24)
-                    iconSection
-                    Spacer(minLength: 28)
-                    textSection
-                    Spacer(minLength: 32)
-                    buttonsSection
-                    Spacer(minLength: 32)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        if isPortrait {
+                            Spacer(minLength: geometry.size.height * 0.34)
+                        } else {
+                            Spacer(minLength: 20)
+                        }
+                        iconSection
+                        Spacer(minLength: 22)
+                        textSection
+                        Spacer(minLength: 28)
+                        buttonsSection
+                        Spacer(minLength: isPortrait ? 20 : 24)
+                    }
+                    .padding(.horizontal, 24)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: geometry.size.height)
                 }
-                .padding(.horizontal, 24)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 400)
+                .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: 0) }
+                .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: 0) }
             }
-            .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: 0) }
-            .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: 0) }
         }
     }
 

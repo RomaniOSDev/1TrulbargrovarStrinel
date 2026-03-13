@@ -17,7 +17,7 @@ private let maxLoadingTimeInterval: TimeInterval = 10
 
 final class LoadingViewController: UIViewController {
 
-    private let loadingHosting = UIHostingController(rootView: LoadingView())
+    private let loadingHosting = UIHostingController(rootView: AnyView(LoadingView()))
     private var didFinishTransition = false
     private var timeoutWorkItem: DispatchWorkItem?
 
@@ -42,7 +42,20 @@ final class LoadingViewController: UIViewController {
 
     private func startConfigFlow() {
         if didFinishTransition { return }
+        showLoadingState()
 
+        NetworkAvailability.checkConnection { [weak self] isConnected in
+            guard let self = self, !self.didFinishTransition else { return }
+            if !isConnected {
+                self.showNoInternetState()
+                return
+            }
+            self.startConfigFlowWithInternet()
+        }
+    }
+
+    private func startConfigFlowWithInternet() {
+        if didFinishTransition { return }
         let config = ConfigManager.shared
 
         // Таймаут 10 сек: по истечении принудительно завершаем загрузку
@@ -62,6 +75,24 @@ final class LoadingViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + conversionDataWaitInterval) { [weak self] in
             self?.performConfigRequest()
         }
+    }
+
+    private func showLoadingState() {
+        loadingHosting.rootView = AnyView(LoadingView())
+    }
+
+    private func showNoInternetState() {
+        cancelTimeout()
+        loadingHosting.rootView = AnyView(
+            NoInternetView(
+                onRetry: { [weak self] in
+                    self?.startConfigFlow()
+                },
+                onContinueOffline: { [weak self] in
+                    self?.transitionToContentView()
+                }
+            )
+        )
     }
 
     private func cancelTimeout() {
