@@ -84,7 +84,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
 
         // target="_blank" / window.open
         if navigationAction.targetFrame == nil {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            openExternalURL(url)
             decisionHandler(.cancel)
             return
         }
@@ -94,7 +94,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
 
         // Deep links and custom schemes should be opened by the system.
         if !isHttp || url.host?.contains("app.appsflyer.com") == true {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            openExternalURL(url)
             decisionHandler(.cancel)
             return
         }
@@ -142,6 +142,35 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
     }
 
     // MARK: - Zoom control
+    private func openExternalURL(_ url: URL) {
+        let application = UIApplication.shared
+        if application.canOpenURL(url) {
+            application.open(url, options: [:]) { [weak self] success in
+                if !success {
+                    self?.showAppNotInstalledAlert()
+                }
+            }
+        } else {
+            // For unknown schemes iOS may return false; still try open, then alert on failure.
+            application.open(url, options: [:]) { [weak self] success in
+                if !success {
+                    self?.showAppNotInstalledAlert()
+                }
+            }
+        }
+    }
+
+    private func showAppNotInstalledAlert() {
+        guard presentedViewController == nil else { return }
+        let alert = UIAlertController(
+            title: "Cannot Open Link",
+            message: "The required app is not installed on this device.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
     private func disablePageZoom() {
         let script = """
         (function() {
@@ -167,7 +196,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
         if let url = navigationAction.request.url {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            openExternalURL(url)
         }
         return nil
     }

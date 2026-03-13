@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UserNotifications
 
 enum NotificationPermissionKeys {
     static let lastCustomDeclineDate = "NotificationPermissionLastCustomDeclineDate"
@@ -46,17 +47,24 @@ final class NotificationPermissionManager {
         return flag
     }
 
-    /// Whether the custom notification screen should be shown before WebView.
-    /// Returns false forever after first accept, and for 3 days after a custom decline.
-    var shouldShowCustomNotificationScreen: Bool {
-        if UserDefaults.standard.bool(forKey: NotificationPermissionKeys.acceptedOnce) {
-            return false
+    /// Shows custom screen only if system permission is not determined and
+    /// 3-day cooldown after custom "Skip" has passed.
+    func shouldShowCustomNotificationScreen(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            guard settings.authorizationStatus == .notDetermined else {
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+
+            let shouldShow: Bool
+            if let date = UserDefaults.standard.object(forKey: NotificationPermissionKeys.lastCustomDeclineDate) as? Date {
+                let interval = Date().timeIntervalSince(date)
+                let threeDays: TimeInterval = TimeInterval(customDeclineCooldownDays * 24 * 60 * 60)
+                shouldShow = interval >= threeDays
+            } else {
+                shouldShow = true
+            }
+            DispatchQueue.main.async { completion(shouldShow) }
         }
-        guard let date = UserDefaults.standard.object(forKey: NotificationPermissionKeys.lastCustomDeclineDate) as? Date else {
-            return true
-        }
-        let interval = Date().timeIntervalSince(date)
-        let threeDays: TimeInterval = TimeInterval(customDeclineCooldownDays * 24 * 60 * 60)
-        return interval >= threeDays
     }
 }

@@ -135,12 +135,15 @@ final class LoadingViewController: UIViewController {
     }
 
     private func transitionToWebView(url: URL) {
-        didFinishTransition = true
-        if NotificationPermissionManager.shared.shouldShowCustomNotificationScreen {
-            let notificationVC = NotificationPermissionViewController(url: url, window: view.window)
-            replaceRoot(with: notificationVC)
-        } else {
-            replaceRoot(with: WebviewVC(url: url))
+        NotificationPermissionManager.shared.shouldShowCustomNotificationScreen { [weak self] shouldShow in
+            guard let self = self, !self.didFinishTransition else { return }
+            self.didFinishTransition = true
+            if shouldShow {
+                let notificationVC = NotificationPermissionViewController(url: url, window: self.view.window)
+                self.replaceRoot(with: notificationVC)
+            } else {
+                self.replaceRoot(with: WebviewVC(url: url))
+            }
         }
     }
 
