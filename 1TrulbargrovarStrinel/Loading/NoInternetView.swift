@@ -9,7 +9,6 @@ import SwiftUI
 
 struct NoInternetView: View {
     var onRetry: () -> Void
-    var onContinueOffline: () -> Void
 
     var body: some View {
         ZStack {
@@ -32,7 +31,7 @@ struct NoInternetView: View {
                     .foregroundColor(.appTextPrimary)
                     .multilineTextAlignment(.center)
 
-                Text("Please check your connection and try again, or continue without internet.")
+                Text("Please check your connection and try again.")
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(.appTextSecondary)
                     .multilineTextAlignment(.center)
@@ -51,15 +50,6 @@ struct NoInternetView: View {
                             .cornerRadius(14)
                     }
                     .buttonStyle(.plain)
-
-                    Button(action: onContinueOffline) {
-                        Text("Continue Offline")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(.appTextSecondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                    }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 26)
@@ -70,5 +60,5 @@ struct NoInternetView: View {
 }
 
 #Preview {
-    NoInternetView(onRetry: {}, onContinueOffline: {})
+    NoInternetView(onRetry: {})
 }

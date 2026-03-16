@@ -93,9 +93,6 @@ final class LoadingViewController: UIViewController {
             NoInternetView(
                 onRetry: { [weak self] in
                     self?.startConfigFlow()
-                },
-                onContinueOffline: { [weak self] in
-                    self?.transitionToContentView()
                 }
             )
         )
