@@ -9,12 +9,15 @@ import UIKit
 import AppsFlyerLib
 import FirebaseCore
 import FirebaseMessaging
+import UserNotifications
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUserNotificationCenterDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         configureAppsFlyer()
+        configurePushNotifications(application)
+        capturePushURLFromLaunchOptions(launchOptions)
         return true
     }
 
@@ -35,8 +38,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
         }
     }
 
+    private func configurePushNotifications(_ application: UIApplication) {
+        UNUserNotificationCenter.current().delegate = self
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                DispatchQueue.main.async {
+                    application.registerForRemoteNotifications()
+                }
+            case .notDetermined, .denied:
+                break
+            @unknown default:
+                break
+            }
+        }
+    }
+
+    private func capturePushURLFromLaunchOptions(_ launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
+        guard let userInfo = launchOptions?[.remoteNotification] as? [AnyHashable: Any],
+              let url = PushNotificationURLRouter.shared.extractURL(from: userInfo) else { return }
+        PushNotificationURLRouter.shared.setPendingURL(url)
+    }
+
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("❗️APNs registration failed: \(error.localizedDescription)")
     }
     
     // MARK: UISceneSession Lifecycle
@@ -61,6 +90,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         AppsFlyerLib.shared().handleOpen(url, options: options)
         return true
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        if let url = PushNotificationURLRouter.shared.extractURL(from: userInfo) {
+            openPushURLInWebView(url)
+        }
+        completionHandler()
+    }
+
+    private func openPushURLInWebView(_ url: URL) {
+        guard let scene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive }) as? UIWindowScene,
+              let window = scene.windows.first(where: { $0.isKeyWindow }) ?? scene.windows.first else {
+            PushNotificationURLRouter.shared.setPendingURL(url)
+            return
+        }
+        window.rootViewController = WebviewVC(url: url)
     }
 }
 

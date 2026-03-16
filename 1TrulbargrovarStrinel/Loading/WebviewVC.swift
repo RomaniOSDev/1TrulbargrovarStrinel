@@ -21,6 +21,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .black
         //PushManager().requestAuthorization()
         setupWebView()
         setupGestures()
@@ -40,6 +41,9 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         webView.uiDelegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.allowsBackForwardNavigationGestures = true // встроенный свайп
+        webView.isOpaque = false
+        webView.backgroundColor = .black
+        webView.scrollView.backgroundColor = .black
         webView.scrollView.delegate = self
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
 
@@ -82,18 +86,24 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         }
         lastRedirectURL = url // сохраняем последнюю попытку перехода
 
-        // target="_blank" / window.open
+        let scheme = (url.scheme ?? "").lowercased()
+        let isHttp = scheme == "http" || scheme == "https"
+
+        // target="_blank" / window.open:
+        // open web links inside the same WKWebView, not in external browser
         if navigationAction.targetFrame == nil {
-            openExternalURL(url)
+            if isHttp {
+                webView.load(URLRequest(url: url))
+            } else {
+                openExternalURL(url)
+            }
             decisionHandler(.cancel)
             return
         }
 
-        let scheme = (url.scheme ?? "").lowercased()
-        let isHttp = scheme == "http" || scheme == "https"
-
-        // Deep links and custom schemes should be opened by the system.
-        if !isHttp || url.host?.contains("app.appsflyer.com") == true {
+        // Custom schemes should be opened by the system.
+        // Keep all http/https links inside WKWebView.
+        if !isHttp {
             openExternalURL(url)
             decisionHandler(.cancel)
             return
@@ -196,7 +206,13 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
         if let url = navigationAction.request.url {
-            openExternalURL(url)
+            let scheme = (url.scheme ?? "").lowercased()
+            let isHttp = scheme == "http" || scheme == "https"
+            if isHttp {
+                webView.load(URLRequest(url: url))
+            } else {
+                openExternalURL(url)
+            }
         }
         return nil
     }

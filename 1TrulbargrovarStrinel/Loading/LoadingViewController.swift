@@ -10,8 +10,8 @@
 import UIKit
 import SwiftUI
 
-/// Задержка (сек) перед запросом конфига, чтобы успеть получить данные конверсии от AppsFlyer.
-private let conversionDataWaitInterval: TimeInterval = 3
+/// Максимальное ожидание данных конверсии перед конфиг-запросом.
+private let conversionDataWaitInterval: TimeInterval = 10
 /// Максимальное время загрузки (сек): при нормальном интернете не должно превышать 10.
 private let maxLoadingTimeInterval: TimeInterval = 10
 
@@ -20,6 +20,9 @@ final class LoadingViewController: UIViewController {
     private let loadingHosting = UIHostingController(rootView: AnyView(LoadingView()))
     private var didFinishTransition = false
     private var timeoutWorkItem: DispatchWorkItem?
+    private var conversionWaitWorkItem: DispatchWorkItem?
+    private var conversionObserver: NSObjectProtocol?
+    private var didStartConfigRequest = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +45,11 @@ final class LoadingViewController: UIViewController {
 
     private func startConfigFlow() {
         if didFinishTransition { return }
+        if let pushURL = PushNotificationURLRouter.shared.consumePendingURL() {
+            didFinishTransition = true
+            replaceRoot(with: WebviewVC(url: pushURL))
+            return
+        }
         showLoadingState()
 
         NetworkAvailability.checkConnection { [weak self] isConnected in
@@ -57,6 +65,7 @@ final class LoadingViewController: UIViewController {
     private func startConfigFlowWithInternet() {
         if didFinishTransition { return }
         let config = ConfigManager.shared
+        didStartConfigRequest = false
 
         // Таймаут 10 сек: по истечении принудительно завершаем загрузку
         timeoutWorkItem = DispatchWorkItem { [weak self] in
@@ -71,10 +80,7 @@ final class LoadingViewController: UIViewController {
             return
         }
 
-        // Ждём возможного прихода данных конверсии, затем запрашиваем конфиг
-        DispatchQueue.main.asyncAfter(deadline: .now() + conversionDataWaitInterval) { [weak self] in
-            self?.performConfigRequest()
-        }
+        waitForConversionDataThenRequestConfig()
     }
 
     private func showLoadingState() {
@@ -98,6 +104,12 @@ final class LoadingViewController: UIViewController {
     private func cancelTimeout() {
         timeoutWorkItem?.cancel()
         timeoutWorkItem = nil
+        conversionWaitWorkItem?.cancel()
+        conversionWaitWorkItem = nil
+        if let observer = conversionObserver {
+            NotificationCenter.default.removeObserver(observer)
+            conversionObserver = nil
+        }
     }
 
     private func finishByTimeout() {
@@ -107,7 +119,14 @@ final class LoadingViewController: UIViewController {
     }
 
     private func performConfigRequest() {
-        guard !didFinishTransition else { return }
+        guard !didFinishTransition, !didStartConfigRequest else { return }
+        didStartConfigRequest = true
+        conversionWaitWorkItem?.cancel()
+        conversionWaitWorkItem = nil
+        if let observer = conversionObserver {
+            NotificationCenter.default.removeObserver(observer)
+            conversionObserver = nil
+        }
 
         ConfigManager.shared.requestConfig { [weak self] result in
             guard let self = self, !self.didFinishTransition else { return }
@@ -122,6 +141,29 @@ final class LoadingViewController: UIViewController {
             case .failure:
                 self.transitionToContentViewOrSavedWebView()
             }
+        }
+    }
+
+    private func waitForConversionDataThenRequestConfig() {
+        if AppsFlyerManager.shared.conversionDataString != nil {
+            performConfigRequest()
+            return
+        }
+
+        conversionObserver = NotificationCenter.default.addObserver(
+            forName: .appsFlyerConversionDataReady,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.performConfigRequest()
+        }
+
+        // Fallback: if conversion data is late, continue with current payload after a short wait.
+        conversionWaitWorkItem = DispatchWorkItem { [weak self] in
+            self?.performConfigRequest()
+        }
+        if let workItem = conversionWaitWorkItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + conversionDataWaitInterval, execute: workItem)
         }
     }
 

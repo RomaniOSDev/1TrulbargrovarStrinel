@@ -9,6 +9,10 @@
 import Foundation
 import AppsFlyerLib
 
+extension Notification.Name {
+    static let appsFlyerConversionDataReady = Notification.Name("appsFlyerConversionDataReady")
+}
+
 /// Ключ для сохранения строки с данными конверсии (для отправки на сервер)
 enum AppsFlyerManagerKeys {
     static let conversionDataString = "AppsFlyerConversionDataString"
@@ -134,6 +138,7 @@ final class AppsFlyerManager: NSObject {
             return
         }
         conversionDataString = string
+        NotificationCenter.default.post(name: .appsFlyerConversionDataReady, object: nil)
     }
 
     /// Сброс сохранённой строки (например для тестов).
