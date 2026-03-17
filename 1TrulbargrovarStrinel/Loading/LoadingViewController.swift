@@ -12,8 +12,8 @@ import SwiftUI
 
 /// Максимальное ожидание данных конверсии перед конфиг-запросом.
 private let conversionDataWaitInterval: TimeInterval = 10
-/// Максимальное время загрузки (сек): при нормальном интернете не должно превышать 10.
-private let maxLoadingTimeInterval: TimeInterval = 10
+/// Максимальное время загрузки (сек): при нормальном интернете не должно превышать 20.
+private let maxLoadingTimeInterval: TimeInterval = 20
 
 final class LoadingViewController: UIViewController {
 
@@ -46,10 +46,24 @@ final class LoadingViewController: UIViewController {
     private func startConfigFlow() {
         if didFinishTransition { return }
         if let pushURL = PushNotificationURLRouter.shared.consumePendingURL() {
-            didFinishTransition = true
-            replaceRoot(with: WebviewVC(url: pushURL))
+            // App launched from push. Check URL availability before opening WebView.
+            PushNotificationURLRouter.shared.checkURLReachable(pushURL) { [weak self] reachable in
+                guard let self = self, !self.didFinishTransition else { return }
+                if reachable {
+                    self.didFinishTransition = true
+                    self.replaceRoot(with: WebviewVC(url: pushURL))
+                } else {
+                    // URL not reachable, continue with normal startup flow.
+                    self.startConfigFlowWithoutPush()
+                }
+            }
             return
         }
+        startConfigFlowWithoutPush()
+    }
+
+    private func startConfigFlowWithoutPush() {
+        if didFinishTransition { return }
         showLoadingState()
 
         NetworkAvailability.checkConnection { [weak self] isConnected in
@@ -153,14 +167,6 @@ final class LoadingViewController: UIViewController {
             queue: .main
         ) { [weak self] _ in
             self?.performConfigRequest()
-        }
-
-        // Fallback: if conversion data is late, continue with current payload after a short wait.
-        conversionWaitWorkItem = DispatchWorkItem { [weak self] in
-            self?.performConfigRequest()
-        }
-        if let workItem = conversionWaitWorkItem {
-            DispatchQueue.main.asyncAfter(deadline: .now() + conversionDataWaitInterval, execute: workItem)
         }
     }
 

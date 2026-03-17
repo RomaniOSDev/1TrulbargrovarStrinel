@@ -88,6 +88,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
 
         let scheme = (url.scheme ?? "").lowercased()
         let isHttp = scheme == "http" || scheme == "https"
+        let isUserTap = navigationAction.navigationType == .linkActivated
 
         // target="_blank" / window.open:
         // open web links inside the same WKWebView, not in external browser
@@ -95,7 +96,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
             if isHttp {
                 webView.load(URLRequest(url: url))
             } else {
-                openExternalURL(url)
+                openExternalURL(url, showAlert: isUserTap)
             }
             decisionHandler(.cancel)
             return
@@ -104,7 +105,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         // Custom schemes should be opened by the system.
         // Keep all http/https links inside WKWebView.
         if !isHttp {
-            openExternalURL(url)
+            openExternalURL(url, showAlert: isUserTap)
             decisionHandler(.cancel)
             return
         }
@@ -152,18 +153,18 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
     }
 
     // MARK: - Zoom control
-    private func openExternalURL(_ url: URL) {
+    private func openExternalURL(_ url: URL, showAlert: Bool) {
         let application = UIApplication.shared
         if application.canOpenURL(url) {
             application.open(url, options: [:]) { [weak self] success in
-                if !success {
+                if !success, showAlert {
                     self?.showAppNotInstalledAlert()
                 }
             }
         } else {
             // For unknown schemes iOS may return false; still try open, then alert on failure.
             application.open(url, options: [:]) { [weak self] success in
-                if !success {
+                if !success, showAlert {
                     self?.showAppNotInstalledAlert()
                 }
             }
@@ -208,10 +209,11 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         if let url = navigationAction.request.url {
             let scheme = (url.scheme ?? "").lowercased()
             let isHttp = scheme == "http" || scheme == "https"
+            let isUserTap = navigationAction.navigationType == .linkActivated
             if isHttp {
                 webView.load(URLRequest(url: url))
             } else {
-                openExternalURL(url)
+                openExternalURL(url, showAlert: isUserTap)
             }
         }
         return nil

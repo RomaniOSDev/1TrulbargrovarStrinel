@@ -40,4 +40,26 @@ final class PushNotificationURLRouter {
 
         return nil
     }
+
+    /// Performs a quick HTTP reachability check for the given URL.
+    /// Calls completion(true) if the request succeeds with 2xx/3xx status, false otherwise.
+    func checkURLReachable(_ url: URL, timeout: TimeInterval = 5, completion: @escaping (Bool) -> Void) {
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+        request.timeoutInterval = timeout
+
+        let task = URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                print("❗️Push URL check failed: \(error.localizedDescription)")
+                DispatchQueue.main.async { completion(false) }
+                return
+            }
+            if let http = response as? HTTPURLResponse, (200..<400).contains(http.statusCode) {
+                DispatchQueue.main.async { completion(true) }
+            } else {
+                DispatchQueue.main.async { completion(false) }
+            }
+        }
+        task.resume()
+    }
 }
