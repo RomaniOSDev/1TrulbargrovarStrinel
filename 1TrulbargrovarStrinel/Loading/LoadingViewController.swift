@@ -156,17 +156,26 @@ final class LoadingViewController: UIViewController {
     }
 
     private func waitForConversionDataThenRequestConfig() {
+        // Fast-path: data already available.
         if AppsFlyerManager.shared.conversionDataString != nil {
             performConfigRequest()
             return
         }
 
+        // Subscribe first, then re-check to avoid a race where AppsFlyer posts the notification
+        // between the initial nil check and observer registration.
         conversionObserver = NotificationCenter.default.addObserver(
             forName: .appsFlyerConversionDataReady,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             self?.performConfigRequest()
+        }
+
+        // Close the race window: if data became available right before/while subscribing,
+        // trigger the request immediately.
+        if AppsFlyerManager.shared.conversionDataString != nil {
+            performConfigRequest()
         }
     }
 

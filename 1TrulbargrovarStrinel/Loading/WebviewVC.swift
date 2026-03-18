@@ -7,6 +7,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
     private var webView: WKWebView!
     private let startURL: URL
     private var lastRedirectURL: URL?
+    private var didLoadInitialURL = false
 
     // MARK: - Init
     init(url: URL) {
@@ -25,7 +26,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         //PushManager().requestAuthorization()
         setupWebView()
         setupGestures()
-        loadURL(startURL)
+        configureUserAgentAndLoad()
         
     }
 
@@ -36,7 +37,6 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         config.allowsInlineMediaPlayback = true
 
         webView = WKWebView(frame: .zero, configuration: config)
-        webView.customUserAgent = UserAgentBuilder.build()
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false
@@ -44,17 +44,34 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         webView.isOpaque = false
         webView.backgroundColor = .black
         webView.scrollView.backgroundColor = .black
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.delegate = self
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
 
         view.addSubview(webView)
 
+        let guide = view.safeAreaLayoutGuide
         NSLayoutConstraint.activate([
-            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            webView.topAnchor.constraint(equalTo: view.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            webView.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
+            webView.topAnchor.constraint(equalTo: guide.topAnchor),
+            webView.bottomAnchor.constraint(equalTo: guide.bottomAnchor)
         ])
+    }
+
+    private func configureUserAgentAndLoad() {
+        guard !didLoadInitialURL else { return }
+
+        // Get the real UA from WebKit at runtime (no hardcoding),
+        // then use it for requests. WKWebView UA typically does not indicate WebView usage.
+        webView.evaluateJavaScript("navigator.userAgent") { [weak self] result, _ in
+            guard let self else { return }
+            if let ua = result as? String, !ua.isEmpty {
+                self.webView.customUserAgent = ua
+            }
+            self.didLoadInitialURL = true
+            self.loadURL(self.startURL)
+        }
     }
 
     private func setupGestures() {
