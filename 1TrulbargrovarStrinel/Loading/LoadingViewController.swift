@@ -179,6 +179,17 @@ final class LoadingViewController: UIViewController {
             self?.performConfigRequest()
         }
 
+        // Stage 2: if conversion data didn't arrive in time, proceed with config request
+        // without conversion payload (so we don't block UX with ContentView fallback).
+        conversionWaitWorkItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            guard !self.didFinishTransition, !self.didStartConfigRequest else { return }
+            if AppsFlyerManager.shared.conversionDataString == nil {
+                self.performConfigRequest()
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + conversionDataWaitInterval, execute: conversionWaitWorkItem!)
+
         // Close the race window: if data became available right before/while subscribing,
         // trigger the request immediately.
         if AppsFlyerManager.shared.conversionDataString != nil {

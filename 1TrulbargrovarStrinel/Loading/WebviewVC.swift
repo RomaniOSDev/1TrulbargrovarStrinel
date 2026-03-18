@@ -3,6 +3,8 @@ import WebKit
 
 final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIScrollViewDelegate {
 
+    private static let sharedProcessPool = WKProcessPool()
+
     // MARK: - Properties
     private var webView: WKWebView!
     private let startURL: URL
@@ -35,6 +37,9 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         let config = WKWebViewConfiguration()
         config.preferences.javaScriptEnabled = true
         config.allowsInlineMediaPlayback = true
+        config.mediaTypesRequiringUserActionForPlayback = []
+        config.websiteDataStore = WKWebsiteDataStore.default()
+        config.processPool = Self.sharedProcessPool
 
         webView = WKWebView(frame: .zero, configuration: config)
         if #available(iOS 16.4, *) {
@@ -64,17 +69,8 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
 
     private func configureUserAgentAndLoad() {
         guard !didLoadInitialURL else { return }
-
-        // Get the real UA from WebKit at runtime (no hardcoding),
-        // then use it for requests. WKWebView UA typically does not indicate WebView usage.
-        webView.evaluateJavaScript("navigator.userAgent") { [weak self] result, _ in
-            guard let self else { return }
-            if let ua = result as? String, !ua.isEmpty {
-                self.webView.customUserAgent = ua
-            }
-            self.didLoadInitialURL = true
-            self.loadURL(self.startURL)
-        }
+        didLoadInitialURL = true
+        loadURL(startURL)
     }
 
     private func setupGestures() {
@@ -109,25 +105,36 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         let scheme = (url.scheme ?? "").lowercased()
         let isHttp = scheme == "http" || scheme == "https"
         let isUserTap = navigationAction.navigationType == .linkActivated
+        let shouldHandleExternally = isUserTap && !isHttp
 
         // target="_blank" / window.open:
         // open web links inside the same WKWebView, not in external browser
         if navigationAction.targetFrame == nil {
-            if isHttp {
+            // Важно: не отменяем не-user-initiated загрузки ресурсов.
+            if isHttp && isUserTap {
                 webView.load(URLRequest(url: url))
+                decisionHandler(.cancel)
+                return
+            } else if shouldHandleExternally {
+                openExternalURL(url, showAlert: true)
+                decisionHandler(.cancel)
+                return
             } else {
-                openExternalURL(url, showAlert: isUserTap)
+                decisionHandler(.allow)
+                return
             }
-            decisionHandler(.cancel)
-            return
         }
 
-        // Custom schemes should be opened by the system.
-        // Keep all http/https links inside WKWebView.
+        // Custom schemes: обрабатываем только по реальному пользовательскому тапу.
         if !isHttp {
-            openExternalURL(url, showAlert: isUserTap)
-            decisionHandler(.cancel)
-            return
+            if shouldHandleExternally {
+                openExternalURL(url, showAlert: true)
+                decisionHandler(.cancel)
+                return
+            } else {
+                decisionHandler(.allow)
+                return
+            }
         }
 
         decisionHandler(.allow)
@@ -231,9 +238,16 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
             let isHttp = scheme == "http" || scheme == "https"
             let isUserTap = navigationAction.navigationType == .linkActivated
             if isHttp {
-                webView.load(URLRequest(url: url))
+                // Для window.open внутри iframe-лаунчеров часто ожидается отдельный webview-контекст.
+                let newWebView = WKWebView(frame: .zero, configuration: configuration)
+                newWebView.navigationDelegate = self
+                newWebView.uiDelegate = self
+                newWebView.load(URLRequest(url: url))
+                return newWebView
             } else {
-                openExternalURL(url, showAlert: isUserTap)
+                if isUserTap {
+                    openExternalURL(url, showAlert: true)
+                }
             }
         }
         return nil
