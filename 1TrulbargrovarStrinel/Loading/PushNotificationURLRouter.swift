@@ -69,22 +69,63 @@ final class PushNotificationURLRouter {
     /// Performs a quick HTTP reachability check for the given URL.
     /// Calls completion(true) if the request succeeds with 2xx/3xx status, false otherwise.
     func checkURLReachable(_ url: URL, timeout: TimeInterval = 5, completion: @escaping (Bool) -> Void) {
-        var request = URLRequest(url: url)
-        request.httpMethod = "HEAD"
-        request.timeoutInterval = timeout
+        // Some hosts reject HEAD (405) even when GET works. Use a tiny GET with Range to keep it fast.
+        func makeRangeGetRequest() -> URLRequest {
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.setValue("bytes=0-0", forHTTPHeaderField: "Range")
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.timeoutInterval = timeout
+            return request
+        }
 
-        let task = URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                print("❗️Push URL check failed: \(error.localizedDescription)")
-                DispatchQueue.main.async { completion(false) }
+        func complete(_ ok: Bool) {
+            DispatchQueue.main.async { completion(ok) }
+        }
+
+        // Try HEAD first (cheap), then fallback to Range GET when needed.
+        var headRequest = URLRequest(url: url)
+        headRequest.httpMethod = "HEAD"
+        headRequest.cachePolicy = .reloadIgnoringLocalCacheData
+        headRequest.timeoutInterval = timeout
+
+        URLSession.shared.dataTask(with: headRequest) { _, response, error in
+            if let http = response as? HTTPURLResponse {
+                if (200..<400).contains(http.statusCode) {
+                    complete(true)
+                    return
+                }
+
+                // Fallback on common "HEAD not allowed" or "blocked" cases.
+                if http.statusCode == 405 || http.statusCode == 403 {
+                    URLSession.shared.dataTask(with: makeRangeGetRequest()) { _, response, error in
+                        if let http = response as? HTTPURLResponse, (200..<400).contains(http.statusCode) {
+                            complete(true)
+                        } else if error != nil {
+                            complete(false)
+                        } else {
+                            complete(false)
+                        }
+                    }.resume()
+                    return
+                }
+            }
+
+            // If HEAD failed due to networking errors, retry once with Range GET.
+            if error != nil {
+                URLSession.shared.dataTask(with: makeRangeGetRequest()) { _, response, error in
+                    if let http = response as? HTTPURLResponse, (200..<400).contains(http.statusCode) {
+                        complete(true)
+                    } else if error != nil {
+                        complete(false)
+                    } else {
+                        complete(false)
+                    }
+                }.resume()
                 return
             }
-            if let http = response as? HTTPURLResponse, (200..<400).contains(http.statusCode) {
-                DispatchQueue.main.async { completion(true) }
-            } else {
-                DispatchQueue.main.async { completion(false) }
-            }
-        }
-        task.resume()
+
+            complete(false)
+        }.resume()
     }
 }

@@ -37,6 +37,9 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         config.allowsInlineMediaPlayback = true
 
         webView = WKWebView(frame: .zero, configuration: config)
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false

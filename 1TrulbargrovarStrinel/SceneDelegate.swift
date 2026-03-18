@@ -42,6 +42,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidBecomeActive(_ scene: UIScene) {
         requestTrackingAuthorizationIfNeeded()
+        routePendingPushURLIfNeeded(in: scene)
     }
 
     /// Запрос на отслеживание данных (ATT) для сбора IDFA, требуется для AppsFlyer.
@@ -77,6 +78,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         if let activity = options.userActivities.first {
             AppsFlyerLib.shared().continue(activity, restorationHandler: nil)
+        }
+    }
+
+    private func routePendingPushURLIfNeeded(in scene: UIScene) {
+        guard let windowScene = scene as? UIWindowScene else { return }
+        guard let url = PushNotificationURLRouter.shared.consumePendingURL() else { return }
+
+        PushNotificationURLRouter.shared.checkURLReachable(url) { reachable in
+            guard reachable else { return }
+
+            let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first
+            window?.rootViewController = WebviewVC(url: url)
         }
     }
 

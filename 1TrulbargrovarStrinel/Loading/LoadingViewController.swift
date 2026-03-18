@@ -125,6 +125,9 @@ final class LoadingViewController: UIViewController {
 
     private func finishByTimeout() {
         guard !didFinishTransition else { return }
+        // If the config request already started, don't override the UI decision by timeout.
+        // The request itself has its own timeout interval.
+        if didStartConfigRequest { return }
         cancelTimeout()
         transitionToContentViewOrSavedWebView()
     }
@@ -132,6 +135,10 @@ final class LoadingViewController: UIViewController {
     private func performConfigRequest() {
         guard !didFinishTransition, !didStartConfigRequest else { return }
         didStartConfigRequest = true
+        // From this point the in-flight request timeout controls the flow.
+        // Prevent the global loading timeout from forcing ContentView while we are awaiting the response.
+        timeoutWorkItem?.cancel()
+        timeoutWorkItem = nil
         conversionWaitWorkItem?.cancel()
         conversionWaitWorkItem = nil
         if let observer = conversionObserver {
