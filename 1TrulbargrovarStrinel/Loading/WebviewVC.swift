@@ -238,12 +238,20 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
             let isHttp = scheme == "http" || scheme == "https"
             let isUserTap = navigationAction.navigationType == .linkActivated
             if isHttp {
-                // Для window.open внутри iframe-лаунчеров часто ожидается отдельный webview-контекст.
-                let newWebView = WKWebView(frame: .zero, configuration: configuration)
-                newWebView.navigationDelegate = self
-                newWebView.uiDelegate = self
-                newWebView.load(URLRequest(url: url))
-                return newWebView
+                if isUserTap {
+                    // Для обычных target="_blank" ссылок открываем в текущем webView,
+                    // чтобы сохранялась единая история навигации (свайп назад).
+                    webView.load(URLRequest(url: url))
+                    return nil
+                } else {
+                    // Для не-user-initiated сценариев (часто у игровых лаунчеров)
+                    // сохраняем отдельный webview-контекст.
+                    let newWebView = WKWebView(frame: .zero, configuration: configuration)
+                    newWebView.navigationDelegate = self
+                    newWebView.uiDelegate = self
+                    newWebView.load(URLRequest(url: url))
+                    return newWebView
+                }
             } else {
                 if isUserTap {
                     openExternalURL(url, showAlert: true)
