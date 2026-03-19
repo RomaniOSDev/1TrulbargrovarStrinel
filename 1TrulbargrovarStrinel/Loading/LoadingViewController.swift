@@ -12,6 +12,8 @@ import SwiftUI
 
 /// Максимальное ожидание данных конверсии перед конфиг-запросом.
 private let conversionDataWaitInterval: TimeInterval = 10
+/// Окно свежести conversion-данных для fast-path при старте.
+private let conversionDataFreshnessWindow: TimeInterval = 10
 /// Максимальное время загрузки (сек): при нормальном интернете не должно превышать 20.
 private let maxLoadingTimeInterval: TimeInterval = 20
 
@@ -163,8 +165,9 @@ final class LoadingViewController: UIViewController {
     }
 
     private func waitForConversionDataThenRequestConfig() {
-        // Fast-path: data already available.
-        if AppsFlyerManager.shared.conversionDataString != nil {
+        // Fast-path только для свежих conversion-данных,
+        // чтобы не использовать устаревшее значение из прошлых запусков.
+        if AppsFlyerManager.shared.hasFreshConversionData(within: conversionDataFreshnessWindow) {
             performConfigRequest()
             return
         }
@@ -192,7 +195,7 @@ final class LoadingViewController: UIViewController {
 
         // Close the race window: if data became available right before/while subscribing,
         // trigger the request immediately.
-        if AppsFlyerManager.shared.conversionDataString != nil {
+        if AppsFlyerManager.shared.hasFreshConversionData(within: conversionDataFreshnessWindow) {
             performConfigRequest()
         }
     }

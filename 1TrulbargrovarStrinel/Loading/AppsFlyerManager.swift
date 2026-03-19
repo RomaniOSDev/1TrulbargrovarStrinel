@@ -16,6 +16,7 @@ extension Notification.Name {
 /// Ключ для сохранения строки с данными конверсии (для отправки на сервер)
 enum AppsFlyerManagerKeys {
     static let conversionDataString = "AppsFlyerConversionDataString"
+    static let conversionDataUpdatedAt = "AppsFlyerConversionDataUpdatedAt"
 }
 
 /// Менеджер AppsFlyer: конверсия + UDL. Не изменяет набор параметров из ответа.
@@ -32,6 +33,27 @@ final class AppsFlyerManager: NSObject {
         set {
             UserDefaults.standard.set(newValue, forKey: AppsFlyerManagerKeys.conversionDataString)
         }
+    }
+
+    /// Время последнего обновления conversionDataString (unix timestamp).
+    private(set) var conversionDataUpdatedAt: TimeInterval? {
+        get {
+            let value = UserDefaults.standard.double(forKey: AppsFlyerManagerKeys.conversionDataUpdatedAt)
+            return value > 0 ? value : nil
+        }
+        set {
+            if let newValue {
+                UserDefaults.standard.set(newValue, forKey: AppsFlyerManagerKeys.conversionDataUpdatedAt)
+            } else {
+                UserDefaults.standard.removeObject(forKey: AppsFlyerManagerKeys.conversionDataUpdatedAt)
+            }
+        }
+    }
+
+    /// Возвращает true, если conversion-данные были обновлены недавно (в пределах окна свежести).
+    func hasFreshConversionData(within seconds: TimeInterval) -> Bool {
+        guard conversionDataString != nil, let updatedAt = conversionDataUpdatedAt else { return false }
+        return Date().timeIntervalSince1970 - updatedAt <= seconds
     }
 
     /// Текущие сырые данные конверсии (для слияния с UDL и повторной проверки)
@@ -138,12 +160,14 @@ final class AppsFlyerManager: NSObject {
             return
         }
         conversionDataString = string
+        conversionDataUpdatedAt = Date().timeIntervalSince1970
         NotificationCenter.default.post(name: .appsFlyerConversionDataReady, object: nil)
     }
 
     /// Сброс сохранённой строки (например для тестов).
     func clearStoredConversionString() {
         conversionDataString = nil
+        conversionDataUpdatedAt = nil
         currentConversionData = nil
         deepLinkData = nil
         isRetryScheduled = false
