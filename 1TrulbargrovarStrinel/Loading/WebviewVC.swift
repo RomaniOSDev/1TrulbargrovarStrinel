@@ -11,6 +11,15 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
     private var lastRedirectURL: URL?
     private var didLoadInitialURL = false
 
+    private func resolvePossiblyRelativeURL(_ url: URL, relativeTo baseURL: URL?) -> URL? {
+        // If incoming URL has no scheme (e.g. "fourthpage"), try to resolve it via base URL.
+        if let scheme = url.scheme, !scheme.isEmpty {
+            return url
+        }
+        guard let baseURL else { return url }
+        return URL(string: url.absoluteString, relativeTo: baseURL)?.absoluteURL
+    }
+
     // MARK: - Init
     init(url: URL) {
         self.startURL = url
@@ -97,7 +106,8 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                  decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else {
-            decisionHandler(.cancel)
+            // Don't cancel when URL is missing; canceling may leave the main document blank.
+            decisionHandler(.allow)
             return
         }
         lastRedirectURL = url // сохраняем последнюю попытку перехода
@@ -105,7 +115,8 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         let scheme = (url.scheme ?? "").lowercased()
         let isHttp = scheme == "http" || scheme == "https"
         let isUserTap = navigationAction.navigationType == .linkActivated
-        let shouldHandleExternally = isUserTap && !isHttp
+        let hasScheme = !(url.scheme ?? "").isEmpty
+        let isRelativeLike = !hasScheme
 
         // target="_blank" / window.open:
         // open web links inside the same WKWebView, not in external browser
@@ -115,9 +126,21 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                 webView.load(URLRequest(url: url))
                 decisionHandler(.cancel)
                 return
-            } else if shouldHandleExternally {
-                openExternalURL(url, showAlert: true)
-                decisionHandler(.cancel)
+            } else if isUserTap && !isHttp {
+                // Relative URLs (e.g. "fourthpage") should be opened inside the webview,
+                // otherwise users experience "nothing happens".
+                if isRelativeLike, let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
+                    webView.load(URLRequest(url: resolved))
+                    decisionHandler(.cancel)
+                    return
+                }
+                // For custom schemes that are expected to open other apps.
+                if hasScheme {
+                    openExternalURL(url, showAlert: true)
+                    decisionHandler(.cancel)
+                    return
+                }
+                decisionHandler(.allow)
                 return
             } else {
                 decisionHandler(.allow)
@@ -126,15 +149,19 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         }
 
         // Custom schemes: обрабатываем только по реальному пользовательскому тапу.
-        if !isHttp {
-            if shouldHandleExternally {
+        if !isHttp && isUserTap {
+            if isRelativeLike, let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
+                webView.load(URLRequest(url: resolved))
+                decisionHandler(.cancel)
+                return
+            }
+            if hasScheme {
                 openExternalURL(url, showAlert: true)
                 decisionHandler(.cancel)
                 return
-            } else {
-                decisionHandler(.allow)
-                return
             }
+            decisionHandler(.allow)
+            return
         }
 
         decisionHandler(.allow)
@@ -237,6 +264,8 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
             let scheme = (url.scheme ?? "").lowercased()
             let isHttp = scheme == "http" || scheme == "https"
             let isUserTap = navigationAction.navigationType == .linkActivated
+            let hasScheme = !(url.scheme ?? "").isEmpty
+            let isRelativeLike = !hasScheme
             if isHttp {
                 if isUserTap {
                     // Для обычных target="_blank" ссылок открываем в текущем webView,
@@ -254,7 +283,14 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                 }
             } else {
                 if isUserTap {
-                    openExternalURL(url, showAlert: true)
+                    // Relative-like URLs should be loaded in the current webview.
+                    if isRelativeLike, let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
+                        webView.load(URLRequest(url: resolved))
+                        return nil
+                    }
+                    if hasScheme {
+                        openExternalURL(url, showAlert: true)
+                    }
                 }
             }
         }

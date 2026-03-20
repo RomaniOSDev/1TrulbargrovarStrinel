@@ -4,7 +4,7 @@
 //
 //  Показывает загрузку в стиле приложения (градиент + анимированный индикатор), запрашивает конфиг,
 //  затем переходит на ContentView или WebviewVC. Адаптируется под портрет и ландшафт.
-//  Максимальное время загрузки — 10 секунд.
+//  Максимальное время загрузки — 15 секунд.
 //
 
 import UIKit
@@ -14,8 +14,11 @@ import SwiftUI
 private let conversionDataWaitInterval: TimeInterval = 10
 /// Окно свежести conversion-данных для fast-path при старте.
 private let conversionDataFreshnessWindow: TimeInterval = 10
-/// Максимальное время загрузки (сек): при нормальном интернете не должно превышать 20.
-private let maxLoadingTimeInterval: TimeInterval = 20
+/// Максимальное время загрузки (сек): при нормальном интернете не должно превышать 15.
+private let maxLoadingTimeInterval: TimeInterval = 15
+
+/// Задержка перед стартом обычного config-flow (когда нет pending push URL).
+private let ordinaryStartDelayInterval: TimeInterval = 5
 
 final class LoadingViewController: UIViewController {
 
@@ -25,6 +28,9 @@ final class LoadingViewController: UIViewController {
     private var conversionWaitWorkItem: DispatchWorkItem?
     private var conversionObserver: NSObjectProtocol?
     private var didStartConfigRequest = false
+    private var ordinaryStartWorkItem: DispatchWorkItem?
+    /// Флаг: config-flow уже запущен (или запланирован) — повторно не стартуем.
+    private var isConfigFlowInProgress = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,6 +54,10 @@ final class LoadingViewController: UIViewController {
     private func startConfigFlow() {
         if didFinishTransition { return }
         if let pushURL = PushNotificationURLRouter.shared.consumePendingURL() {
+            // Push-ветка: отменяем отложенный обычный старт.
+            ordinaryStartWorkItem?.cancel()
+            ordinaryStartWorkItem = nil
+            isConfigFlowInProgress = true
             // App launched from push. Check URL availability before opening WebView.
             PushNotificationURLRouter.shared.checkURLReachable(pushURL) { [weak self] reachable in
                 guard let self = self, !self.didFinishTransition else { return }
@@ -56,16 +66,32 @@ final class LoadingViewController: UIViewController {
                     self.replaceRoot(with: WebviewVC(url: pushURL))
                 } else {
                     // URL not reachable, continue with normal startup flow.
+                    self.isConfigFlowInProgress = false
                     self.startConfigFlowWithoutPush()
                 }
             }
             return
         }
-        startConfigFlowWithoutPush()
+
+        // Обычный старт: запускаем config-flow не сразу, а после задержки.
+        // Это стабилизирует поведение на TestFlight, когда приложение уходит в background/foreground.
+        guard !isConfigFlowInProgress, ordinaryStartWorkItem == nil else { return }
+        isConfigFlowInProgress = true
+        showLoadingState()
+
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.ordinaryStartWorkItem = nil
+            guard !self.didFinishTransition, self.isConfigFlowInProgress else { return }
+            self.startConfigFlowWithoutPush()
+        }
+        ordinaryStartWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + ordinaryStartDelayInterval, execute: workItem)
     }
 
     private func startConfigFlowWithoutPush() {
         if didFinishTransition { return }
+        isConfigFlowInProgress = true
         showLoadingState()
 
         NetworkAvailability.checkConnection { [weak self] isConnected in
@@ -83,7 +109,7 @@ final class LoadingViewController: UIViewController {
         let config = ConfigManager.shared
         didStartConfigRequest = false
 
-        // Таймаут 10 сек: по истечении принудительно завершаем загрузку
+        // Таймаут: по истечении принудительно завершаем загрузку
         timeoutWorkItem = DispatchWorkItem { [weak self] in
             self?.finishByTimeout()
         }
@@ -104,6 +130,7 @@ final class LoadingViewController: UIViewController {
     }
 
     private func showNoInternetState() {
+        isConfigFlowInProgress = false
         cancelTimeout()
         loadingHosting.rootView = AnyView(
             NoInternetView(
@@ -117,6 +144,8 @@ final class LoadingViewController: UIViewController {
     private func cancelTimeout() {
         timeoutWorkItem?.cancel()
         timeoutWorkItem = nil
+        ordinaryStartWorkItem?.cancel()
+        ordinaryStartWorkItem = nil
         conversionWaitWorkItem?.cancel()
         conversionWaitWorkItem = nil
         if let observer = conversionObserver {
@@ -131,6 +160,7 @@ final class LoadingViewController: UIViewController {
         // The request itself has its own timeout interval.
         if didStartConfigRequest { return }
         cancelTimeout()
+        isConfigFlowInProgress = false
         transitionToContentViewOrSavedWebView()
     }
 
