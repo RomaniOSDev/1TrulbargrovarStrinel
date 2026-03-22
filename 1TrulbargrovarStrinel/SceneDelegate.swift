@@ -85,12 +85,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
         guard let url = PushNotificationURLRouter.shared.consumePendingURL() else { return }
 
-        PushNotificationURLRouter.shared.checkURLReachable(url) { reachable in
-            guard reachable else { return }
-
-            let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first
-            window?.rootViewController = WebviewVC(url: url)
-        }
+        let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first
+        window?.rootViewController = WebviewVC(url: url)
     }
 
 }

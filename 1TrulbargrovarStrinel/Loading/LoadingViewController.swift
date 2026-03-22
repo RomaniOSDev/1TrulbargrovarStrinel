@@ -54,22 +54,13 @@ final class LoadingViewController: UIViewController {
     private func startConfigFlow() {
         if didFinishTransition { return }
         if let pushURL = PushNotificationURLRouter.shared.consumePendingURL() {
-            // Push-ветка: отменяем отложенный обычный старт.
+            // Push-ветка: отменяем отложенный обычный старт, открываем WebView сразу (без HEAD-проверки —
+            // редиректы и ATS обрабатывает WKWebView так же, как в других приложениях).
             ordinaryStartWorkItem?.cancel()
             ordinaryStartWorkItem = nil
             isConfigFlowInProgress = true
-            // App launched from push. Check URL availability before opening WebView.
-            PushNotificationURLRouter.shared.checkURLReachable(pushURL) { [weak self] reachable in
-                guard let self = self, !self.didFinishTransition else { return }
-                if reachable {
-                    self.didFinishTransition = true
-                    self.replaceRoot(with: WebviewVC(url: pushURL))
-                } else {
-                    // URL not reachable, continue with normal startup flow.
-                    self.isConfigFlowInProgress = false
-                    self.startConfigFlowWithoutPush()
-                }
-            }
+            didFinishTransition = true
+            replaceRoot(with: WebviewVC(url: pushURL))
             return
         }
 

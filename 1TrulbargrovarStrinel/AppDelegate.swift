@@ -104,11 +104,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate, UNUser
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
         if let url = PushNotificationURLRouter.shared.extractURL(from: userInfo) {
-            PushNotificationURLRouter.shared.checkURLReachable(url) { [weak self] reachable in
-                guard let self = self else { return }
-                if reachable {
-                    self.openPushURLInWebView(url)
-                }
+            DispatchQueue.main.async { [weak self] in
+                self?.openPushURLInWebView(url)
             }
         }
         completionHandler()
