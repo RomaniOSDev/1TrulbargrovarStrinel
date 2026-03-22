@@ -11,13 +11,22 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
     private var lastRedirectURL: URL?
     private var didLoadInitialURL = false
 
+    /// Resolves http(s) as-is; relative paths (e.g. `fourthpage` from `window.open`) against the current document URL.
     private func resolvePossiblyRelativeURL(_ url: URL, relativeTo baseURL: URL?) -> URL? {
-        // If incoming URL has no scheme (e.g. "fourthpage"), try to resolve it via base URL.
-        if let scheme = url.scheme, !scheme.isEmpty {
+        let scheme = (url.scheme ?? "").lowercased()
+        if scheme == "http" || scheme == "https" {
             return url
         }
-        guard let baseURL else { return url }
-        return URL(string: url.absoluteString, relativeTo: baseURL)?.absoluteURL
+        guard let baseURL else { return nil }
+        let raw = url.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return nil }
+        if let resolved = URL(string: raw, relativeTo: baseURL)?.absoluteURL {
+            return resolved
+        }
+        if !url.path.isEmpty, url.path != "/", let resolved = URL(string: url.path, relativeTo: baseURL)?.absoluteURL {
+            return resolved
+        }
+        return nil
     }
 
     // MARK: - Init
@@ -116,41 +125,32 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         let isHttp = scheme == "http" || scheme == "https"
         let isUserTap = navigationAction.navigationType == .linkActivated
         let hasScheme = !(url.scheme ?? "").isEmpty
-        let isRelativeLike = !hasScheme
 
-        // target="_blank" / window.open:
-        // open web links inside the same WKWebView, not in external browser
+        // target="_blank" / window.open (в т.ч. script-initiated): всегда в этом же WKWebView,
+        // иначе WebKit создаёт пустой WebPage и relative URL даёт requestURLIsValid = 0.
         if navigationAction.targetFrame == nil {
-            // Важно: не отменяем не-user-initiated загрузки ресурсов.
-            if isHttp && isUserTap {
+            if isHttp {
                 webView.load(URLRequest(url: url))
                 decisionHandler(.cancel)
                 return
-            } else if isUserTap && !isHttp {
-                // Relative URLs (e.g. "fourthpage") should be opened inside the webview,
-                // otherwise users experience "nothing happens".
-                if isRelativeLike, let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
-                    webView.load(URLRequest(url: resolved))
-                    decisionHandler(.cancel)
-                    return
-                }
-                // For custom schemes that are expected to open other apps.
-                if hasScheme {
-                    openExternalURL(url, showAlert: true)
-                    decisionHandler(.cancel)
-                    return
-                }
-                decisionHandler(.allow)
-                return
-            } else {
-                decisionHandler(.allow)
+            }
+            if let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
+                webView.load(URLRequest(url: resolved))
+                decisionHandler(.cancel)
                 return
             }
+            if hasScheme, scheme != "about" {
+                openExternalURL(url, showAlert: true)
+                decisionHandler(.cancel)
+                return
+            }
+            decisionHandler(.allow)
+            return
         }
 
         // Custom schemes: обрабатываем только по реальному пользовательскому тапу.
         if !isHttp && isUserTap {
-            if isRelativeLike, let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
+            if let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
                 webView.load(URLRequest(url: resolved))
                 decisionHandler(.cancel)
                 return
@@ -260,39 +260,27 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                  createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
-        if let url = navigationAction.request.url {
-            let scheme = (url.scheme ?? "").lowercased()
-            let isHttp = scheme == "http" || scheme == "https"
-            let isUserTap = navigationAction.navigationType == .linkActivated
-            let hasScheme = !(url.scheme ?? "").isEmpty
-            let isRelativeLike = !hasScheme
-            if isHttp {
-                if isUserTap {
-                    // Для обычных target="_blank" ссылок открываем в текущем webView,
-                    // чтобы сохранялась единая история навигации (свайп назад).
-                    webView.load(URLRequest(url: url))
-                    return nil
-                } else {
-                    // Для не-user-initiated сценариев (часто у игровых лаунчеров)
-                    // сохраняем отдельный webview-контекст.
-                    let newWebView = WKWebView(frame: .zero, configuration: configuration)
-                    newWebView.navigationDelegate = self
-                    newWebView.uiDelegate = self
-                    newWebView.load(URLRequest(url: url))
-                    return newWebView
-                }
-            } else {
-                if isUserTap {
-                    // Relative-like URLs should be loaded in the current webview.
-                    if isRelativeLike, let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
-                        webView.load(URLRequest(url: resolved))
-                        return nil
-                    }
-                    if hasScheme {
-                        openExternalURL(url, showAlert: true)
-                    }
-                }
-            }
+        // window.open / target=_blank: не создаём второй WKWebView (он не в иерархии и ломает relative URL).
+        // Script-initiated вызовы — не .linkActivated; всё равно грузим в текущий webView.
+        guard let url = navigationAction.request.url else { return nil }
+        let scheme = (url.scheme ?? "").lowercased()
+        let isHttp = scheme == "http" || scheme == "https"
+        let hasScheme = !(url.scheme ?? "").isEmpty
+
+        if isHttp {
+            webView.load(URLRequest(url: url))
+            return nil
+        }
+        // about:blank для пустого окна — не грузим; последующий request придёт отдельно
+        if scheme == "about" {
+            return nil
+        }
+        if let resolved = resolvePossiblyRelativeURL(url, relativeTo: webView.url) {
+            webView.load(URLRequest(url: resolved))
+            return nil
+        }
+        if hasScheme {
+            openExternalURL(url, showAlert: true)
         }
         return nil
     }
