@@ -455,7 +455,7 @@
 				CODE_SIGN_ENTITLEMENTS = 1TrulbargrovarStrinel/1TrulbargrovarStrinel.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 1TrulbargrovarStrinel/Info.plist;
@@ -499,7 +499,7 @@
 				CODE_SIGN_ENTITLEMENTS = 1TrulbargrovarStrinel/1TrulbargrovarStrinel.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = 1TrulbargrovarStrinel/Info.plist;

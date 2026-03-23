@@ -6,6 +6,11 @@
 	<string>We use the camera to let you capture photos and videos inside web content.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We use the microphone to record audio for camera and web content.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
