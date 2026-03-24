@@ -125,6 +125,7 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
         let isHttp = scheme == "http" || scheme == "https"
         let isUserTap = navigationAction.navigationType == .linkActivated
         let hasScheme = !(url.scheme ?? "").isEmpty
+        let isMainFrameNavigation = navigationAction.targetFrame?.isMainFrame ?? true
 
         // target="_blank" / window.open (в т.ч. script-initiated): всегда в этом же WKWebView,
         // иначе WebKit создаёт пустой WebPage и relative URL даёт requestURLIsValid = 0.
@@ -145,6 +146,14 @@ final class WebviewVC: UIViewController, WKNavigationDelegate, WKUIDelegate, UIS
                 return
             }
             decisionHandler(.allow)
+            return
+        }
+
+        // App deeplinks can be script-initiated (.other), so don't require linkActivated.
+        // Handle only main-frame navigations to avoid intercepting embedded subresources.
+        if !isHttp && hasScheme && scheme != "about" && isMainFrameNavigation {
+            openExternalURL(url, showAlert: true)
+            decisionHandler(.cancel)
             return
         }
 
